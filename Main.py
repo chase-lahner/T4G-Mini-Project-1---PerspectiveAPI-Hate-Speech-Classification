@@ -99,6 +99,8 @@ def generate_perspective(df_dev, df_demographic):
     
     fpr_class = perspective.fpr()
     fpr_demo_class = perspective.fpr_demographic()
+
+    perspective.test_false_positives()
     
     return fpr_class, fpr_demo_class, metrics_dev_class
 
@@ -107,6 +109,7 @@ def run_metrics(df_dev, df_demographic, pred_dev, pred_dem):
     fpr = metrics.fpr()
     metrics_dev = metrics.run_metrics()
     fpr_demo = metrics.fpr_demographic()
+    metrics.test_false_positives()
     
     compare = Comparison(fpr, fpr_demo, metrics_dev, fpr_class, fpr_demo_class, metrics_dev_class)
 

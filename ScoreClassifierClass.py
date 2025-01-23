@@ -120,3 +120,33 @@ class ScoreClassifierClass:
             fpr_by_demographic[demographic] = self.fpr_arg(cur_df[cur_df['demographic'] == demographic])
 
         return fpr_by_demographic
+    
+    def test_false_positives(self):
+        y_true = self.df_dev['label']
+        y_pred = self.df_dev['pred']
+
+        pd.set_option('display.max_rows', None)  # Show all rows
+        pd.set_option('display.max_columns', None)  # Show all columns
+        pd.set_option('display.max_colwidth', None)  # Show full content of each cell   
+
+        false_positives = (y_pred == 'OFF') & (y_true == 'NOT')
+
+        print("------------------------------------------------------")
+
+        print("Number of False Positives PERSPECTIVE API: ", sum(false_positives))
+
+        print("------------------------------------------------------")
+
+        print("\n")
+
+        false_positives_index = false_positives[false_positives].index
+
+        sampled_false_positives = false_positives_index.to_series().sample(n=min(10, len(false_positives_index)))
+
+        print("Sampled False Positives: ")
+        for entry in sampled_false_positives:
+            print(self.df_dev.loc[entry,'text'])
+            print("\n")
+
+        print("------------------------------------------------------")
+        print("\n")
