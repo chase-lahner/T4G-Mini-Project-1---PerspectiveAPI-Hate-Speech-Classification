@@ -36,7 +36,6 @@ def import_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     df_demographic['label'] = "NOT"
 
     #return data 
-    print("Data imported successfully!")
     return df_train, df_dev, df_demographic
 
 def generate_features(df: pd.DataFrame) -> pd.DataFrame:
@@ -48,18 +47,31 @@ def generate_features(df: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: Dataframe with engineered features
     """
-        
+    # Create the feature generator and preprcess the data
     feature_generator = FeatureGenerator(df)
     feature_generator.preprocess()
-    feature_generator.add_punctuation_count()
-    feature_generator.add_str_length()
+    
+    # TODO Select the features for your model    
+    # To add a feature "uncomment" it by deleting the hashtag in front of the line. 
+    # Hover your cursor over the code to find out what it does.
+    # You can remove a feature by "commenting" it out, or putting a hashtag in front of the line. 
+    
     feature_generator.add_capital_ratio()
-    feature_generator.add_count_profanity()
-    feature_generator.add_sentiment_analysis()
+    #feature_generator.add_punctuation_count()
+    #feature_generator.add_str_length()
+    #feature_generator.add_count_profanity()
+    #feature_generator.add_sentiment_analysis()
+    
+    # TODO create custom features for your model   
+    # You can customize the two features below for specific words or emotions. Add as many as you would like!   
+    # You can reuse a line of code by copying and pasting, just make sure to change the word.
+    feature_generator.add_emotion_count("joy")  # for this you can choose the emotions:  'anger', 'anticipation', 'disgust', 'fear', 'negative', 'positive', 'sadness', 'surprise', 'trust'
+    feature_generator.add_word_count("hate")    # for this you can choose any word you want
+
+    
+    # Scale features to improve model performance and return data
     feature_generator.scale_features()
-    features = feature_generator.get_features()
-    print(features.head(5))
-    return features
+    return feature_generator.get_features()
 
 def generate_classifier(X, y)-> tuple[LogisticRegression, HateSpeechClassifier]:
     """Generates model from engineered features and original data. 
@@ -71,12 +83,18 @@ def generate_classifier(X, y)-> tuple[LogisticRegression, HateSpeechClassifier]:
     Returns:
         LogisticRegression: Model trained using train. 
     """
-    #pull actual values from df
+
+    # create the classifier object
     classifier = HateSpeechClassifier(X, y)
-    classifier.set_threshold(threshold=0.7)
-    model = classifier.generate_model('med') #low, med, high
+    
+    # TODO select how long to search for the best model 
+    # Low will be the fastest but high will give you the best model possible (it might take 5+ minutes)
+    model = classifier.generate_model('med') #low, med, or high
+    
+    # TODO Select how accurate you want your model to bed. Enter a percentage as a decimal value (0.7 = 70% accurate)
+    # If you pick an accuracy too high, the model to default to whatever the closest value is. 
     classifier.optimize_threshold(goal_accuracy=0.7)
-    print("Model generated!")
+    
     return model, classifier
 
 def generate_predictions(classifier, df_dev, df_demographic):
@@ -91,8 +109,12 @@ def generate_predictions(classifier, df_dev, df_demographic):
     return pred_dev, pred_dem
 
 def generate_perspective(df_dev, df_demographic):
-    #classify 
+    # TODO select a threshold for the perspectiveAPI
+    # The threshold determines how sensitive the model is to toxicity. 
+    # For example, 0.7 means that tweets that are 70% toxic or more will be classified as hate speech.
     threshold = 0.7
+    
+    #create the classifier object
     perspective = ScoreClassifierClass(df_dev, df_demographic, threshold)
 
     df_dev['pred'] = perspective.classify_dev()
@@ -103,8 +125,6 @@ def generate_perspective(df_dev, df_demographic):
     
     fpr_class = perspective.fpr()
     fpr_demo_class = perspective.fpr_demographic()
-
-    perspective.test_false_positives()
     
     return fpr_class, fpr_demo_class, metrics_dev_class
 
@@ -113,7 +133,6 @@ def run_metrics(df_dev, df_demographic, pred_dev, pred_dem):
     fpr = metrics.fpr()
     metrics_dev = metrics.run_metrics()
     fpr_demo = metrics.fpr_demographic()
-    metrics.test_false_positives()
     
     compare = Comparison(fpr, fpr_demo, metrics_dev, fpr_class, fpr_demo_class, metrics_dev_class)
 

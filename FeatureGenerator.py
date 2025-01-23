@@ -35,8 +35,16 @@ class FeatureGenerator:
         """
         Preprocess data by tokenizing, lowercasing, and removing stopwords. 
         """
-        nltk.download('stopwords')
-        nltk.download('wordnet')
+        try:
+            nltk.data.find('corpora/stopwords')
+        except LookupError:
+            nltk.download('stopwords')        
+        
+        try:
+            nltk.data.find('corpora/wordnet')
+        except LookupError:
+            nltk.download('wordnet')
+
         stop_words = set(stopwords.words('english'))
         stop_words.add("user")
 
@@ -109,8 +117,11 @@ class FeatureGenerator:
         """
         Generates sentiment scores using nltk sid module. 
         """
-        
-        nltk.download('vader_lexicon')
+        try:
+            nltk.data.find('corpora/vader_lexicon')
+        except LookupError:
+            nltk.download('vader_lexicon')
+
         sid = SentimentIntensityAnalyzer()
 
         def get_sentiment_scores(text):
